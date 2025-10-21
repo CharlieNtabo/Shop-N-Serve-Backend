@@ -31,3 +31,28 @@ export const protect = async (req, res, next) => {
     res.status(500).json({ message: "Auth middleware failure" });
   }
 };
+
+export const adminOrSuperadminOnly = async (req, res, next) => {
+  try {
+    if (
+      req.user &&
+      (req.user.role === "admin" || req.user.role === "superadmin")
+    ) {
+      next();
+    }
+  } catch (error) {
+    res
+      .status(401)
+      .json({ message: "Only admins and superadmins have access." });
+  }
+};
+
+export const superadminOnly = async (req, res, next) => {
+  try {
+    if (req.user && req.user.role === "superadmin") {
+      next();
+    }
+  } catch (error) {
+    req.status(401).json({ message: "Only superadmins have access." });
+  }
+};

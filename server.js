@@ -1,10 +1,11 @@
-import 'dotenv/config';
+import "dotenv/config";
 
 import express from "express";
 import { connectDB } from "./config/db.js";
 import cookieParser from "cookie-parser";
 import userRoutes from "./routes/user.route.js";
-import cors from 'cors';
+import productRoutes from "./routes/product.route.js";
+import cors from "cors";
 
 const app = express();
 
@@ -16,8 +17,8 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(
   cors({
-    origin: 'http://localhost:3000',
-    credentials: true
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 
@@ -26,6 +27,7 @@ app.get("/", (req, res) => {
 });
 
 app.use("/api/users", userRoutes);
+app.use("/api/products", productRoutes);
 
 app.listen(PORT, () => {
   console.log(`Server is running on http://localhost:${PORT}`);

@@ -36,15 +36,19 @@ export const getProductById = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, price, discountPrice, description, category, countInStock } =
-      req.body;
-
-    const images = req.files?.map((file) => file.path) || [];
+    const {
+      name,
+      price,
+      discountPrice,
+      description,
+      category,
+      countInStock,
+      images,
+    } = req.body;
 
     if (
       !name ||
       !price ||
-      !discountPrice ||
       !description ||
       !category ||
       !countInStock ||
@@ -82,9 +86,15 @@ export const updateProduct = async (req, res) => {
       return res.status(400).json({ message: "ProductId is required" });
     }
 
-    const { name, price, discountPrice, description, category, countInStock } =
-      req.body;
-    const images = req.files?.map((file) => file.path) || [];
+    const {
+      name,
+      price,
+      discountPrice,
+      description,
+      category,
+      countInStock,
+      images,
+    } = req.body;
 
     const product = await Product.findById(productId);
 
@@ -94,7 +104,7 @@ export const updateProduct = async (req, res) => {
     if (description) product.description = description;
     if (category) product.category = category;
     if (countInStock !== undefined) product.countInStock = countInStock;
-    if (images.length > 0) product.images = [...product.images, ...images];
+    if (images && images.length > 0) product.images = images;
 
     const updatedProduct = await product.save();
     res
@@ -114,6 +124,10 @@ export const deleteProduct = async (req, res) => {
     }
 
     const deletedProduct = await Product.findByIdAndDelete(productId);
+
+    if (!deletedProduct) {
+      return res.status(404).json({ message: 'Product Not Found' })
+    }
     res
       .status(200)
       .json({ message: "Product deleted successfully", deletedProduct });

@@ -24,7 +24,7 @@ export const getProductById = async (req, res) => {
 
     const product = await Product.findById(productId);
     if (!product) {
-      return req.status(404).json({ message: "Product Not Found" });
+      return res.status(404).json({ message: "Product Not Found" });
     }
 
     res.status(200).json({ message: "Product fetched successfully", product });
@@ -60,7 +60,7 @@ export const createProduct = async (req, res) => {
     const product = new Product({
       name,
       price,
-      discountPrice: discountPrice || 0,
+      discountPrice: discountPrice ?? null,
       description,
       category,
       countInStock: countInStock || 0,

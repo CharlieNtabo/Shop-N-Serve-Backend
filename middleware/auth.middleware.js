@@ -53,6 +53,6 @@ export const superadminOnly = async (req, res, next) => {
       next();
     }
   } catch (error) {
-    req.status(401).json({ message: "Only superadmins have access." });
+    res.status(401).json({ message: "Only superadmins have access." });
   }
 };

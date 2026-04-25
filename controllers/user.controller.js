@@ -125,46 +125,73 @@ export const getCurrentUser = async (req, res) => {
   }
 };
 
-export const firebaseLogin = async (req,res) => {
+export const updateUserProfile = async (req, res) => {
   try {
-    const { idToken } = req.body
-    if (!idToken) {
-      return res.status(400).json({ message: 'No idToken provided' })
+    const user = req.user;
+
+    if (name) user.name = name;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(password, salt);
     }
 
-    const decoded = await admin.auth().verifyIdToken(idToken)
-    const { email, name, picture } = decoded
-
-    let user = await User.findOne({ email })
-    if (!user) {
-      user = await User.create({
-        name: name || 'New User',
-        email,
-        password: 'SOCIAL_LOGIN_PLACEHOLDER'
-      })
-    }
-
-    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: '7d' })
-
-    res.cookie('token', token, {
-      httpOnly: true,
-      sameSite: 'none',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-      path: '/'
-    })
+    const updatedUserProfile = await user.save();
 
     res.status(200).json({
-      success: true, user: {
+      id: updateUserProfile._id,
+      name: updateUserProfile.name,
+      password: updateUserProfile.password,
+    });
+  } catch (error) {
+    console.error("Error updating user profile:", error);
+    res.status(500).json({ message: "User Profile Update error!" });
+  }
+};
+
+export const firebaseLogin = async (req, res) => {
+  try {
+    const { idToken } = req.body;
+    if (!idToken) {
+      return res.status(400).json({ message: "No idToken provided" });
+    }
+
+    const decoded = await admin.auth().verifyIdToken(idToken);
+    const { email, name, picture } = decoded;
+
+    let user = await User.findOne({ email });
+    if (!user) {
+      user = await User.create({
+        name: name || "New User",
+        email,
+        password: "SOCIAL_LOGIN_PLACEHOLDER",
+      });
+    }
+
+    const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+      expiresIn: "7d",
+    });
+
+    res.cookie("token", token, {
+      httpOnly: true,
+      sameSite: "none",
+      secure: process.env.NODE_ENV === "production",
+      maxAge: 1000 * 60 * 60 * 24 * 7,
+      path: "/",
+    });
+
+    res.status(200).json({
+      success: true,
+      user: {
         id: user._id,
         name: user.name,
         email: user.email,
         role: user.role,
-        picture: picture || null
-      }, token
-    })
+        picture: picture || null,
+      },
+      token,
+    });
   } catch (error) {
-    console.error('Firebase Login error:', error);
-    res.status(500).json({ message: 'Firebase login failed' })    
+    console.error("Firebase Login error:", error);
+    res.status(500).json({ message: "Firebase login failed" });
   }
-}
+};
